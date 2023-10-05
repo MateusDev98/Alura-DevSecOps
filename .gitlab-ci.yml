@@ -1,0 +1,45 @@
+image:
+  name: alpine:latest
+stages:
+  - compile
+  - audit
+  - test
+  - package
+  - deploy
+
+compile:
+  stage: compile
+  script:
+    - sh ./.ci/compile.sh codigo.txt
+
+# scan virus:
+#   stage: audit
+#   script:
+#     - sh ./.ci/virus-scanner.sh
+
+# scan vulnerabilities:
+#   stage: audit
+#   script:
+#     - sh ./.ci/vulnerabilities-scanner.sh
+
+test:
+  stage: test
+  script:
+    - sh ./.ci/test.sh codigo.txt
+
+package:
+  before_script:
+    - sh ./.ci/install-dependencies.sh
+  stage: package
+  artifacts:
+    untracked: true
+    expire_in: 10 minutes
+  script:
+    - sh ./.ci/package.sh codigo.sh
+
+deploy:
+  stage: deploy
+  dependencies:
+    - package
+  script:
+    - sh ./.ci/deploy.sh artifact.zip
